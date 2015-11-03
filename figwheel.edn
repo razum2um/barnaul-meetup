@@ -1,0 +1,14 @@
+{
+ :http-server-root "public" ;; default
+ :server-port 3449          ;; default
+ :open-file-command "emacsclient"
+ :builds [{:id "dev",
+           :source-paths ["src/cljs" "src/cljc"],
+           :figwheel true
+           :build-options
+           {:main jsconf.core,
+            :asset-path "/js/out",
+            :output-to "resources/public/js/app.js",
+            :output-dir "resources/public/js/out",
+            :source-map-timestamp true}}]
+ }
