@@ -1,3 +1,6 @@
 (ns jsconf.state)
 
-(def state (atom {:text "Hello Barnaul"}))
+(def state (atom {:title "Hello Barnaul"
+                  :qr {:size 500
+                       :ecl "L"
+                       :value "ya.ru"}}))
