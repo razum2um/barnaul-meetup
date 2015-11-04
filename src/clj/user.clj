@@ -5,4 +5,6 @@
             [jsconf.core]))
 
 (set-init! #'jsconf.core/dev-system)
+
+(aprint.utils/use-method aprint.dispatch/color-dispatch :figwheel-sidecar.utils/compiler-env pr)
 (def p aprint.core/aprint)

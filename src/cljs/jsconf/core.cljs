@@ -5,6 +5,7 @@
             [sablono.core :refer-macros [html]]
             [ajax.core :refer [GET POST]]
             [qrcloj.core :refer [make-symbol]]
+            [figwheel.client :as fig]
             [jsconf.state :refer [state]]))
 
 (enable-console-print!)
@@ -39,6 +40,8 @@
   (render [_]
    (html
     [:div.col-sm-6.col-xs-12
+     [:p (pr-str votes)]
+     [:p (str "cid" (pr-str client-id))]
      [:input (if (-> votes (contains? client-id))
                (btn-chosen client-id)
                (btn-default id text))]]
@@ -83,3 +86,10 @@
 
 (def root (. js/document (getElementById "app")))
 (om/root app-widget state {:target root})
+
+(fig/add-message-watch
+ :state-server
+ (fn [{:keys [msg-name] :as msg}]
+   (when (= msg-name :push-state)
+     (println "raw:" msg)
+     (reset! state (:state msg)))))

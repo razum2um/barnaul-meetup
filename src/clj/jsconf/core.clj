@@ -6,10 +6,13 @@
             [compojure.core :refer [routes GET POST defroutes]]
             [compojure.response :refer [render]]
             [ring.middleware.reload :refer [wrap-reload]]
+            [figwheel-sidecar.components.figwheel-server :as server]
             [ring.middleware.json :refer [wrap-json-params wrap-json-response]]
             [ring.middleware.defaults :refer :all]
             [ring.util.response :refer [set-cookie]]
+            [clojure.core.async :refer [go-loop timeout <!]]
             [jsconf.state :refer [state]])
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream])
   (:gen-class))
 
 (defn apply-vote [client-id vote-id {:keys [id] :as answer}]
@@ -25,11 +28,15 @@
                       (rand-int 10000))]
     (set-cookie response "client-id" client-id)))
 
+(defn update-state [client-id v]
+  (swap! state update-in [:answers] #(update-votes client-id v %)))
+
 (defroutes app-routes
   (GET "/test" req (str "<html><body><pre>req:" (with-out-str (clojure.pprint/pprint req)) "</pre></body></html>"))
   (POST "/vote" {{v :v :as params} :params cookies :cookies :as req}
-        (pprint cookies)
-        (-> (swap! state update-in [:answers] #(update-votes (some-> cookies (get "client-id") :value Integer/parseInt) v %))
+        (-> (update-state
+             (some-> cookies (get "client-id") :value Integer/parseInt)
+             v)
             (render req)
             (with-client-id req)))
   (GET "/" req (-> "public/index.html"
@@ -43,10 +50,42 @@
              wrap-json-params
              wrap-reload))
 
+(defrecord PushStateService [figwheel-system]
+  component/Lifecycle
+  (start [{:keys [state-server] :as this}]
+
+    (remove-watch state ::state)
+    (add-watch state ::state
+               (fn [_ _ _ new-state]
+                 (server/send-message
+                  figwheel-system
+                  ::server/broadcast
+                  {:msg-name :push-state :state new-state})))
+
+    this
+    #_(if-not state-server
+      (let [state-server (atom true)]
+        (go-loop []
+          (when @state-server
+            (server/send-message figwheel-system
+                                 ::server/broadcast
+                                 {:msg-name :time-push :time (java.util.Date.)})
+            (<! (timeout 1000))
+            (recur)))
+        (assoc this :state-server state-server))
+      this))
+  (stop [{:keys [state-server] :as this}]
+    (if state-server
+      (do (reset! state-server false)
+          (assoc this :state-server nil))
+      this)))
+
 (defn dev-system []
   (component/system-map
-   :figwheel (sys/figwheel-system (-> (sys/fetch-config)
-                                      (assoc-in [:figwheel-options :resolved-ring-handler] app)))))
+   :css-watcher (sys/css-watcher {:watch-paths ["resources/public/css"]})
+   :figwheel-system (sys/figwheel-system (-> (sys/fetch-config)
+                                             (assoc-in [:figwheel-options :resolved-ring-handler] app)))
+   :state-pusher (component/using (map->PushStateService {}) [:figwheel-system])))
 
 (defn -main
   "I don't do a whole lot ... yet."
