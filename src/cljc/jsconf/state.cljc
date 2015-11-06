@@ -3,8 +3,8 @@
 (defonce state
   (atom {:title "Привет JS Meetup"
          :question {:text "JS FTW?"}
-         :answers [{:id 0 :text "Да" :votes #{}}
-                   {:id 1 :text "Нет" :votes #{}}]
+         :answers [{:id 0 :text "Да" :votes []}
+                   {:id 1 :text "Нет" :votes []}]
          :qr {:size 500
               :ecl "L"
               :value "http://macpro.nbt:3449"}}))

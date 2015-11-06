@@ -18,7 +18,7 @@
 (defn apply-vote [client-id vote-id {:keys [id] :as answer}]
   (if (= id vote-id)
     (update-in answer [:votes] #(conj % client-id))
-    (update-in answer [:votes] #(disj % client-id))))
+    answer))
 
 (defn update-votes [client-id vote-id votes]
   (mapv (partial apply-vote client-id vote-id) votes))

@@ -31,10 +31,11 @@
    :value text
    :on-click (fn [_] (vote! id))})
 
-(defn btn-chosen [id]
+(defn btn-chosen [id client-id count]
   {:type "button"
    :class "btn btn-success"
-   :value (str "✓ (" id ")")})
+   :value (str "+" count " (" client-id ")")
+   :on-click (fn [_] (vote! id))})
 
 (defcomponent answer-widget [{:keys [id text votes]} _]
   (render [_]
@@ -42,8 +43,8 @@
     [:div.col-sm-6.col-xs-12
      [:p (pr-str votes)]
      [:p (str "cid" (pr-str client-id))]
-     [:input (if (-> votes (contains? client-id))
-               (btn-chosen client-id)
+     [:input (if-let [my-votes (-> (group-by identity votes) (get client-id))]
+               (btn-chosen id client-id (count my-votes))
                (btn-default id text))]]
     )))
 
