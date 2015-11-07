@@ -1,14 +1,15 @@
 (ns jsconf.state)
 
 (defonce state
-  (atom {:title "Привет JS Meetup"
+  (atom {:title "Hi JS Meetup"
+
          :connected 0
-         :question {:text "JS FTW?"}
-         :answers [{:id 0 :text "Да" :votes []}
-                   {:id 1 :text "Нет" :votes []}]
-         :qr {:size 500
-              :ecl "L"
-              :value "http://macpro.nbt:3449"}}))
+         :question {:text "js vs cljs"}
+         :answers [{:id 0 :text "js" :votes []}
+                   {:id 1 :text "cljs" :votes []}]
+
+         :qr {:size 500 :ecl "L"}}
+        ))
 
 (defn- log [message atom]
   (->> @atom

@@ -10,7 +10,8 @@
 
 (enable-console-print!)
 
-(defonce client-id (int (.get goog.net.cookies "client-id")))
+(def client-id (int (.get goog.net.cookies "client-id")))
+(def slide? (-> js/location (aget "hash") (= "#slide")))
 
 (defcomponent stat-widget [{:keys [text votes]} _]
   (render
@@ -41,8 +42,7 @@
   (render [_]
    (html
     [:div.col-sm-6.col-xs-12
-     [:p (pr-str votes)]
-     [:p (str "cid" (pr-str client-id))]
+     (if slide? [:p (pr-str votes)])
      [:input (if-let [my-votes (-> (group-by identity votes) (get client-id))]
                (btn-chosen id client-id (count my-votes))
                (btn-default id text))]]
@@ -70,8 +70,6 @@
     )))
 
 
-(def slide? (-> js/location (aget "hash") (= "#slide")))
-
 (defcomponent app-widget [{:keys [title connected qr question answers]} _]
   (render [_]
     (html
@@ -80,10 +78,12 @@
        (om/build question-widget question)
        (if slide?
          [:div
-          [:p (str "Connected: " connected)]
+          [:h3 (str "Connected: " connected)]
           (om/build-all stat-widget answers)
           (om/build qr-widget qr)]
-         (om/build-all answer-widget answers))]
+         [:div
+           [:h3 (str "ID=" (pr-str client-id))]
+           (om/build-all answer-widget answers)])]
       )))
 
 (def root (. js/document (getElementById "app")))
