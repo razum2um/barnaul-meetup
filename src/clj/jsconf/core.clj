@@ -72,6 +72,7 @@
                  (swap! state assoc-in [:connected] (get new-state "dev"))))
 
     (swap! state assoc-in [:connected] (-> figwheel-system get-connections (get "dev")))
+    (swap! state assoc-in [:dt] (java.util.Date.))
 
     this)
   (stop [{:keys [state-server] :as this}]
