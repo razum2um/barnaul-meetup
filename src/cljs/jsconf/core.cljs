@@ -72,7 +72,7 @@
 
 (def slide? (-> js/location (aget "hash") (= "#slide")))
 
-(defcomponent app-widget [{:keys [title qr question answers]} _]
+(defcomponent app-widget [{:keys [title connected qr question answers]} _]
   (render [_]
     (html
       [:div.wrapper
@@ -80,6 +80,7 @@
        (om/build question-widget question)
        (if slide?
          [:div
+          [:p (str "Connected: " connected)]
           (om/build-all stat-widget answers)
           (om/build qr-widget qr)]
          (om/build-all answer-widget answers))]

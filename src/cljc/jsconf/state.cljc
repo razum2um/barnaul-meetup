@@ -2,6 +2,7 @@
 
 (defonce state
   (atom {:title "Привет JS Meetup"
+         :connected 0
          :question {:text "JS FTW?"}
          :answers [{:id 0 :text "Да" :votes []}
                    {:id 1 :text "Нет" :votes []}]

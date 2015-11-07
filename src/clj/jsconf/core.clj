@@ -50,6 +50,9 @@
              wrap-json-params
              wrap-reload))
 
+(defn get-connections [figwheel-system]
+  (-> figwheel-system :system deref :figwheel-server :connection-count))
+
 (defrecord PushStateService [figwheel-system]
   component/Lifecycle
   (start [{:keys [state-server] :as this}]
@@ -62,18 +65,15 @@
                   ::server/broadcast
                   {:msg-name :push-state :state new-state})))
 
-    this
-    #_(if-not state-server
-      (let [state-server (atom true)]
-        (go-loop []
-          (when @state-server
-            (server/send-message figwheel-system
-                                 ::server/broadcast
-                                 {:msg-name :time-push :time (java.util.Date.)})
-            (<! (timeout 1000))
-            (recur)))
-        (assoc this :state-server state-server))
-      this))
+    (remove-watch state ::conn)
+    (add-watch (get-connections figwheel-system)
+               ::conn
+               (fn [_ _ _ new-state]
+                 (swap! state assoc-in [:connected] (get new-state "dev"))))
+
+    (swap! state assoc-in [:connected] (-> figwheel-system get-connections (get "dev")))
+
+    this)
   (stop [{:keys [state-server] :as this}]
     (if state-server
       (do (reset! state-server false)
