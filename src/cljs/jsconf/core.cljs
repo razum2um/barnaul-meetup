@@ -17,7 +17,7 @@
   (render
    [_]
    (html
-    [:div.col-sm-6.col-xs-12
+    [:div.col-md-6.col-sm-12
      [:div (count votes)]
      [:div text]])))
 
@@ -28,23 +28,23 @@
 
 (defn btn-default [id text]
   {:type "button"
-   :class "btn btn-default"
+   :class "btn btn-primary btn-lg"
    :value text
    :on-click (fn [_] (vote! id))})
 
-(defn btn-chosen [id client-id count]
+(defn btn-chosen [id text count]
   {:type "button"
-   :class "btn btn-success"
-   :value (str "+" count " (" client-id ")")
+   :class "btn btn-success btn-lg"
+   :value (str text ": +" count)
    :on-click (fn [_] (vote! id))})
 
 (defcomponent answer-widget [{:keys [id text votes]} _]
   (render [_]
    (html
-    [:div.col-sm-6.col-xs-12
-     (if slide? [:p (pr-str votes)])
+    [:div.col-md-6.col-sm-12
+     (if true [:p (pr-str votes)])
      [:input (if-let [my-votes (-> (group-by identity votes) (get client-id))]
-               (btn-chosen id client-id (count my-votes))
+               (btn-chosen id text (count my-votes))
                (btn-default id text))]]
     )))
 
@@ -55,13 +55,16 @@
     [:div
      [:h2 text]])))
 
+(defn or-origin [v]
+  (or v (-> js/location .-origin)))
+
 (defcomponent qr-widget [{:keys [size ecl value]} _]
   (did-mount [_]
     (println "did-mount called")
-    (make-symbol "qr" ecl value))
+    (make-symbol "qr" ecl (-> value or-origin)))
   (did-update [_ _ _]
     (println "did-update called")
-    (make-symbol "qr" ecl value))
+    (make-symbol "qr" ecl (-> value or-origin)))
   (render [_]
     (println "render called")
     (html
@@ -78,12 +81,12 @@
        (om/build question-widget question)
        (if slide?
          [:div
-          [:h3 (str "Connected: " connected)]
+          [:h2 (str "Connected: " connected)]
           (om/build-all stat-widget answers)
           (om/build qr-widget qr)]
          [:div
-           [:h3 (str "ID=" (pr-str client-id))]
-           (om/build-all answer-widget answers)])]
+          (om/build-all answer-widget answers)
+          [:h2 (str "ID=" (pr-str client-id))]])]
       )))
 
 (def root (. js/document (getElementById "app")))

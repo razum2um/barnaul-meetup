@@ -1,5 +1,21 @@
-.container {
+.wrapper {
     text-align: center;
+}
+
+.wrapper .btn {
+    display: inline-block;
+    width: 100%;
+    font-size: 10em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.wrapper h1 {
+    font-size: 10em;
+}
+
+.wrapper h2 {
+    font-size: 7.5em;
 }
 
 #qr {

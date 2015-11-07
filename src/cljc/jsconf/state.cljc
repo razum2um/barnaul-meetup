@@ -5,8 +5,8 @@
 
          :connected 0
          :question {:text "js vs cljs"}
-         :answers [{:id 0 :text "js" :votes []}
-                   {:id 1 :text "cljs" :votes []}]
+         :answers [{:id 0 :text "js" :votes #{}}
+                   {:id 1 :text "cljs" :votes #{}}]
 
          :qr {:size 500 :ecl "L"}}
         ))
