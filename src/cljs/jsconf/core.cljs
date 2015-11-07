@@ -12,6 +12,7 @@
 
 (def client-id (int (.get goog.net.cookies "client-id")))
 (def slide? (-> js/location (aget "hash") (= "#slide")))
+(def origin (-> js/location .-origin))
 
 (defcomponent stat-widget [{:keys [text votes]} _]
   (render
@@ -55,16 +56,14 @@
     [:div
      [:h2 text]])))
 
-(defn or-origin [v]
-  (or v (-> js/location .-origin)))
 
-(defcomponent qr-widget [{:keys [size ecl value]} _]
+(defcomponent qr-widget [{:keys [size ecl]} _]
   (did-mount [_]
     (println "did-mount called")
-    (make-symbol "qr" ecl (-> value or-origin)))
+    (make-symbol "qr" ecl origin))
   (did-update [_ _ _]
     (println "did-update called")
-    (make-symbol "qr" ecl (-> value or-origin)))
+    (make-symbol "qr" ecl origin))
   (render [_]
     (println "render called")
     (html
