@@ -11,32 +11,19 @@
             [ring.middleware.defaults :refer :all]
             [ring.util.response :refer [set-cookie]]
             [clojure.core.async :refer [go-loop timeout <!]]
-            [jsconf.state :refer [state]])
+            [jsconf.state :refer [state update-answers]])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream])
   (:gen-class))
-
-(defn apply-vote [client-id vote-id {:keys [id] :as answer}]
-  (if (= id vote-id)
-    (update-in answer [:votes] #(conj % client-id))
-    (update-in answer [:votes] #(disj % client-id))
-    ;; answer
-    ))
-
-(defn update-votes [client-id vote-id votes]
-  (mapv (partial apply-vote client-id vote-id) votes))
 
 (defn with-client-id [response {:keys [cookies]}]
   (let [client-id (or (some-> cookies (get "client-id") :value Integer/parseInt)
                       (rand-int 10000))]
     (set-cookie response "client-id" client-id)))
 
-(defn update-state [client-id v]
-  (swap! state update-in [:answers] #(update-votes client-id v %)))
-
 (defroutes app-routes
   (GET "/test" req (str "<html><body><pre>req:" (with-out-str (clojure.pprint/pprint req)) "</pre></body></html>"))
-  (POST "/vote" {{v :v :as params} :params cookies :cookies :as req}
-        (-> (update-state
+  (POST "/vote" {{v :v} :params cookies :cookies :as req}
+        (-> (update-answers
              (some-> cookies (get "client-id") :value Integer/parseInt)
              v)
             (render req)

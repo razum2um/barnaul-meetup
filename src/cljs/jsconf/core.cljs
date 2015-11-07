@@ -6,7 +6,7 @@
             [ajax.core :refer [GET POST]]
             [qrcloj.core :refer [make-symbol]]
             [figwheel.client :as fig]
-            [jsconf.state :refer [state]]))
+            [jsconf.state :refer [state update-answers]]))
 
 (enable-console-print!)
 
@@ -19,10 +19,10 @@
    [_]
    (html
     [:div.col-md-6.col-sm-12
-     [:div (count votes)]
-     [:div text]])))
+     [:h2 (str text ": " (count votes))]])))
 
 (defn vote! [id]
+  (update-answers client-id id)
   (POST "/vote" {:params {:v id}
                  :format :json
                  :handler println}))
@@ -43,7 +43,7 @@
   (render [_]
    (html
     [:div.col-md-6.col-sm-12
-     (if true [:p (pr-str votes)])
+     (if slide? [:p (pr-str votes)])
      [:input (if-let [my-votes (-> (group-by identity votes) (get client-id))]
                (btn-chosen id text (count my-votes))
                (btn-default id text))]]
@@ -67,8 +67,10 @@
   (render [_]
     (println "render called")
     (html
+     [:div
+      [:h3 origin]
       [:canvas#qr {:width (str size "px")
-                   :height (str size "px")}]
+                   :height (str size "px")}]]
     )))
 
 
