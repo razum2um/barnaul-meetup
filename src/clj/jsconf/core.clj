@@ -21,7 +21,6 @@
     (set-cookie response "client-id" client-id)))
 
 (defroutes app-routes
-  (GET "/test" req (str "<html><body><pre>req:" (with-out-str (clojure.pprint/pprint req)) "</pre></body></html>"))
   (POST "/vote" {{v :v} :params cookies :cookies :as req}
         (-> (update-answers
              (some-> cookies (get "client-id") :value Integer/parseInt)
@@ -44,7 +43,7 @@
 
 (defrecord PushStateService [figwheel-system]
   component/Lifecycle
-  (start [{:keys [state-server] :as this}]
+  (start [comp]
 
     (remove-watch state ::state)
     (add-watch state ::state
@@ -61,14 +60,10 @@
                  (swap! state assoc-in [:connected] (get new-state "dev"))))
 
     (swap! state assoc-in [:connected] (-> figwheel-system get-connections (get "dev")))
-    (swap! state assoc-in [:dt] (java.util.Date.))
 
-    this)
-  (stop [{:keys [state-server] :as this}]
-    (if state-server
-      (do (reset! state-server false)
-          (assoc this :state-server nil))
-      this)))
+    comp)
+  (stop [comp]
+    comp))
 
 (defn dev-system []
   (component/system-map

@@ -27,12 +27,11 @@
 (defn apply-vote [client-id vote-id {:keys [id] :as answer}]
   (if (= id vote-id)
     (update-in answer [:votes] #(conj % client-id))
-    (update-in answer [:votes] #(disj % client-id))
-    ;; answer
-    ))
+    (update-in answer [:votes] #(disj % client-id))))
 
 (defn update-votes [client-id vote-id votes]
   (mapv (partial apply-vote client-id vote-id) votes))
 
 (defn update-answers [client-id v]
+  (println "update-answers" client-id "-" v)
   (swap! state update-in [:answers] #(update-votes client-id v %)))
