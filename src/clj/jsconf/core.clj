@@ -5,6 +5,9 @@
             [jsconf.state :refer [state]])
   (:gen-class))
 
+(defn get-connections [figwheel-system]
+  (-> figwheel-system :system deref :figwheel-server :connection-count))
+
 (defrecord PushStateService [figwheel-system]
   component/Lifecycle
   (start [comp]
@@ -16,6 +19,15 @@
                   figwheel-system
                   ::server/broadcast
                   {:msg-name :push-state :state new-state})))
+
+    (remove-watch state ::conn)
+    (add-watch (get-connections figwheel-system)
+               ::conn
+               (fn [_ _ _ new-state]
+                 (swap! state assoc-in [:connected] (get new-state "dev"))))
+
+    (swap! state assoc-in [:connected] (-> figwheel-system get-connections (get "dev")))
+
     comp)
   (stop [comp]
     comp))

@@ -2,6 +2,8 @@
 
 (defonce state
   (atom {:title "Hi JS Meetup"
+         :connected 0
+         :qr {:size 500 :ecl "L"}
          }))
 
 (defn- log [message atom]
