@@ -1,5 +1,6 @@
 (ns jsconf.core
   (:require [om.core :as om]
+            [goog.net.cookies]
             [om-tools.core :refer-macros [defcomponent]]
             [sablono.core :refer-macros [html]]
             [qrcloj.core :refer [make-symbol]]
@@ -8,6 +9,7 @@
 
 (enable-console-print!)
 
+(def client-id (int (.get goog.net.cookies "client-id")))
 (def slide? (-> js/location (aget "hash") (= "#slide")))
 (def origin (-> js/location .-origin))
 
@@ -38,6 +40,8 @@
          [:div
           [:h2 (str "Connected: " connected)]
           (om/build qr-widget qr)]
+         [:div
+          [:h2 (str "ID=" (pr-str client-id))]]
          )]
       )))
 
